@@ -1,0 +1,14 @@
+act
+  callUp, callDown, callInside: Int;
+  request: Int;
+
+proc FloorButtons(f: Int) =
+      callUp(f) . request(f) . Buttons
+    + callDown(f) . request(f) . Buttons
+    + callInside(f) . request(f) . Buttons;
+
+proc Buttons =
+  sum f: Int. (f >= 1 && f <= 3) -> FloorButtons(f);
+
+init
+  Buttons;
