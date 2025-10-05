@@ -8,7 +8,7 @@ proc FloorButtons(f: Int) =
     + callInside(f) . request(f) . Buttons;
 
 proc Buttons =
-  sum f: Int. (f >= 1 && f <= 3) -> FloorButtons(f);
+  sum f: Int. (f >= 1 && f <= 10) -> FloorButtons(f);
 
 init
   Buttons;
