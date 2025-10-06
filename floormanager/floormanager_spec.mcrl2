@@ -20,7 +20,7 @@ proc Elevator(c: Floor) = %behavior of the elevator with parameter c of sort Flo
 
 proc Travel(c: Floor, t: Floor) = %define Travel process with parameters c and t of sort Floor
   (c == t) -> detect(c) . stop . Elevator(c) % ->if c=t, then do the sequence of actions detect.stop.move to Elevator process to wait for new requests 
-<>
++
   (c != t) -> move(nextFloor(c,t)) . %if c is still different from target floor, move one floor up/down accordingly.
               detect(nextFloor(c,t)) . %check the floor again
               Travel(nextFloor(c,t), t); %recurse, loop over again. nextFloor(c,t) updates current floor, t passes the same target floor again
