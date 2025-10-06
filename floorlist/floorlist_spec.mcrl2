@@ -7,7 +7,7 @@ map
 
 var
   c, t: Floor;
-
+  em: Bool;
 eqn
   initFloor = 1;
   lastFloor = 5;
@@ -25,6 +25,7 @@ act
   open, close: Floor;                    % door actions
   noObstacle: Floor;           % obstacle sensor actions
   noOverload: Floor;           % load sensor actions
+  pressEmergency;
 % ---------------------------------------------------------------
 % BUTTONS: generates floor requests
 % ---------------------------------------------------------------
@@ -49,18 +50,21 @@ proc DoorControl(f: Floor) =
 % ---------------------------------------------------------------
 % ELEVATOR: responds to requests and moves accordingly
 % ---------------------------------------------------------------
-proc Elevator(c: Floor) =
-  sum r: Floor. (r >= initFloor && r <= lastFloor) ->
-      request(r) . Travel(c, r);
+proc Elevator(c: Floor, em: Bool) =
+    pressEmergency . Elevator(c, !em)
+  + (em == true) -> delta . Elevator(c, em)      % wait while emergency is active
+  + (em == false) ->
+        sum r: Floor. (r >= initFloor && r <= lastFloor) ->
+            request(r) . Travel(c, r, em);
 
-proc Travel(c: Floor, t: Floor) =
-  (c == t) -> detect(c) . open(c) . DoorControl(c) . close(c) . stop . Elevator(c)
+proc Travel(c: Floor, t: Floor, em: Bool) =
+  (c == t) -> detect(c) . stop . open(c) . DoorControl(c) . close(c) . Elevator(c, em)
 + (c != t) -> move(nextFloor(c, t)) .
                detect(nextFloor(c, t)) .
-               Travel(nextFloor(c, t), t);
+               Travel(nextFloor(c, t), t, em);
 % ---------------------------------------------------------------
 % SYSTEM COMPOSITION: Buttons and Elevator run together
 % ---------------------------------------------------------------
 init
   comm({ request | request -> request },    % synchronize on "request"
-       Buttons || Elevator(initFloor));
+       Buttons || Elevator(initFloor, false));
