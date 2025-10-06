@@ -1,0 +1,53 @@
+sort Floor = Int;
+
+map
+  nextFloor: Floor # Floor -> Floor;
+  initFloor: Floor;
+  lastFloor: Floor;
+
+var
+  c, t: Floor;
+
+eqn
+  initFloor = 1;
+  lastFloor = 5;
+
+  nextFloor(c, t) =
+    if(c < t, c + 1,
+      if(c > t, c - 1,
+         c));
+
+act
+  callUp, callDown, callInside: Floor;   % button actions
+  request: Floor;                        % unified request action
+  move, detect: Floor;
+  stop;
+
+% ---------------------------------------------------------------
+% BUTTONS: generates floor requests
+% ---------------------------------------------------------------
+proc Buttons =
+  sum f: Floor. (f >= initFloor && f <= lastFloor) ->
+      ( callUp(f) . request(f) . Buttons
+      + callDown(f) . request(f) . Buttons
+      + callInside(f) . request(f) . Buttons );
+
+% ---------------------------------------------------------------
+% ELEVATOR: responds to requests and moves accordingly
+% ---------------------------------------------------------------
+proc Elevator(c: Floor) =
+  sum r: Floor. (r >= initFloor && r <= lastFloor) ->
+      request(r) . Travel(c, r);
+
+proc Travel(c: Floor, t: Floor) =
+  (c == t) -> detect(c) . stop . Elevator(c)
++ (c != t) -> move(nextFloor(c, t)) .
+              detect(nextFloor(c, t)) .
+              Travel(nextFloor(c, t), t);
+
+% ---------------------------------------------------------------
+% SYSTEM COMPOSITION: Buttons and Elevator run together
+% ---------------------------------------------------------------
+init
+  comm({ request | request -> request },    % synchronize on "request"
+       Buttons || Elevator(initFloor));
