@@ -22,7 +22,7 @@ act
   request: Floor;                        % unified request action
   move, detect: Floor;
   stop;
-
+  open, close: Floor;   % door actions
 % ---------------------------------------------------------------
 % BUTTONS: generates floor requests
 % ---------------------------------------------------------------
@@ -40,10 +40,10 @@ proc Elevator(c: Floor) =
       request(r) . Travel(c, r);
 
 proc Travel(c: Floor, t: Floor) =
-  (c == t) -> detect(c) . stop . Elevator(c)
+  (c == t) -> detect(c) . open(c) . close(c) . stop . Elevator(c)
 + (c != t) -> move(nextFloor(c, t)) .
-              detect(nextFloor(c, t)) .
-              Travel(nextFloor(c, t), t);
+               detect(nextFloor(c, t)) .
+               Travel(nextFloor(c, t), t);
 
 % ---------------------------------------------------------------
 % SYSTEM COMPOSITION: Buttons and Elevator run together
